@@ -1,17 +1,26 @@
-// this code runs when on https://login.tum.de/* which is the Shibboleth login for tum
-
-window.addEventListener('load', function() {
-    // first get stored username and password - if that fails run main which relies on chrome saved passwords
-    try { // this try catch block doesn't work yet todo
-        chrome.storage.local.get('moodle_key', function(items) {
-            if (!chrome.runtime.error && document.getElementsByClassName('form-error').length === 0) {
-                document.getElementById('username').value = items.moodle_key.username
-                document.getElementById('password').value = items.moodle_key.password
-                // wait a bit and then click the login button
-                setTimeout(() => { document.getElementById("btnLogin").click() }, 500);
-            }
+window.addEventListener('load', async function() {
+    try {
+        const items = await new Promise((resolve) => {
+            chrome.storage.local.get('moodle_key', function(items) {
+                resolve(items);
+            });
         });
+
+        if (items && items.moodle_key && document.getElementsByClassName('form-error').length === 0) {
+            document.getElementById('username').value = items.moodle_key.username;
+            document.getElementById('password').value = items.moodle_key.password;
+            // Wait a short time (100ms) and then click the login button
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            document.getElementById("btnLogin").click();
+        } else {
+            await main();
+        }
     } catch (err) {
-        main().then() // async function but don't need then I guess
+        console.error('An error occurred:', err);
     }
-})
+});
+
+async function main() {
+    // Your implementation of the main function goes here
+    // Make sure to handle any async operations with proper await statements.
+}
